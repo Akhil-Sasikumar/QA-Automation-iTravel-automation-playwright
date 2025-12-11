@@ -1,0 +1,30 @@
+{
+  "name": "playwright_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "emailUtils.js",
+  "type": "module",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "imapflow": "^1.1.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "allure-playwright": "^3.4.2",
+    "cross-env": "^10.1.0",
+    "playwright": "^1.57.0"
+  },
+   "scripts": {
+    "login:sit1": "cross-env TEST_ENV=sit1 node scripts/recordAuth.js",
+    "login:sit2": "cross-env TEST_ENV=sit2 node scripts/recordAuth.js",
+    "test:sit1": "cross-env TEST_ENV=sit1 npx playwright test",
+    "test:sit2": "cross-env TEST_ENV=sit2 npx playwright test",
+    "test:staging2": "cross-env TEST_ENV=staging2 npx playwright test"
+  }
+}
