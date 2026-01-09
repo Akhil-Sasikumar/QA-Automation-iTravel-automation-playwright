@@ -9,7 +9,7 @@ const DEFAULT_MFA_TIMEOUT = 10 * 60_000; // 10 minutes for MFA + redirects
 function getEnvName() {
   const envArg = process.env.TEST_ENV || process.argv[2] || 'sit1';
   const env = String(envArg).toLowerCase();
-  if (!['sit1', 'sit2', 'staging2'].includes(env)) {
+  if (!['sit1', 'sit2', 'staging2', 'ibs'].includes(env)) {
     throw new Error(`Unsupported environment "${env}". Supported: sit1, sit2, staging2`);
   }
   return env;
@@ -66,7 +66,10 @@ async function run() {
   console.log(`Will click next using selector: ${cfg.nextButtonSelector}`);
   console.log(`Saved session will be written to: ${cfg.outFile}\n`);
 
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({
+    headless: false,
+    slowMo: 5000 
+  });
   const context = await browser.newContext();
   const page = await context.newPage();
 
@@ -100,8 +103,8 @@ async function run() {
     console.log('No username provided in env; please enter username manually in the opened browser.');
   }
 
-  console.log('\n🔐 Please complete password and MFA in the opened browser window.');
-  console.log(`The script will wait up to ${Math.round(DEFAULT_MFA_TIMEOUT/60000)} minutes for the dashboard to appear, then save the session.\n`);
+  console.log('\n Please complete password and MFA in the opened browser window.');
+  console.log(`The script will wait up to ${Math.round(DEFAULT_MFA_TIMEOUT / 60000)} minutes for the dashboard to appear, then save the session.\n`);
 
   // Wait for dashboard indicator (Selling App tile). This is broad and adjustable.
   try {
@@ -109,7 +112,7 @@ async function run() {
       'div.widget-item_name:has-text("Selling App"), #dashboard-root, .dashboard-main, .widget-container',
       { timeout: DEFAULT_MFA_TIMEOUT }
     );
-    console.log('🏠 Dashboard detected (Selling App or dashboard container).');
+    console.log(' Dashboard detected (Selling App or dashboard container).');
   } catch (e) {
     console.warn(`Timeout while waiting for dashboard (${DEFAULT_MFA_TIMEOUT}ms).`);
     // still continue to save if user wants; check current url and cookies for diagnostics
@@ -128,7 +131,7 @@ async function run() {
   // Save storage state
   try {
     await context.storageState({ path: cfg.outFile });
-    console.log(`\n✅ Saved storage state to ${cfg.outFile}`);
+    console.log(`\n Saved storage state to ${cfg.outFile}`);
   } catch (e) {
     console.error('Failed to save storage state:', e.message || e);
     await browser.close();

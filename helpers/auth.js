@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { LoginPageStaging2 } from '../pages/LoginPage.staging2.js';
+import { LoginPageibs } from '../pages/Loginpageibs.js';
 
 export async function ensureAuth(page, env) {
   if (!env) throw new Error('ensureAuth: "env" argument is required (e.g. "sit1", "sit2", "staging2").');
@@ -18,28 +19,57 @@ export async function ensureAuth(page, env) {
     return;
   }
 
-  // Only staging2 supports automated login in this project
-  if (environment !== 'staging2') {
-    throw new Error(`ensureAuth: unsupported env "${env}". Supported values: sit1, sit2, staging2.`);
+  if (environment === 'staging2') {
+    const prefix = 'STAGING2';
+
+    const loginPath = process.env[`${prefix}_LOGIN_URL`];
+    const user = process.env[`${prefix}_USERNAME`];
+    const pass = process.env[`${prefix}_PASSWORD`];
+
+    if (!loginPath) {
+      throw new Error(`ensureAuth: ${prefix}_LOGIN_URL is required in environment variables.`);
+    }
+    if (!user || !pass) {
+      throw new Error(
+        `ensureAuth: ${prefix}_USERNAME and ${prefix}_PASSWORD must be set.`
+      );
+    }
+
+    const lp = new LoginPageStaging2(page);
+    await lp.gotoLogin(loginPath);
+    await lp.login(user, pass);
+    return;
   }
 
-  // STAGING2 automated login
-  const prefix = environment.toUpperCase();
-  const loginPath = process.env[`${prefix}_LOGIN_URL`];
-  const user = process.env[`${prefix}_USERNAME`];
-  const pass = process.env[`${prefix}_PASSWORD`];
+  /**
+   * IBS automated login
+   */
+  if (environment === 'ibs') {
+    const prefix = 'IBS';
 
-  if (!loginPath) throw new Error(`ensureAuth: ${prefix}_LOGIN_URL is required in environment variables.`);
-  if (!user || !pass) throw new Error(`ensureAuth: ${prefix}_USERNAME and ${prefix}_PASSWORD must be set for automated staging2 login.`);
+    const loginPath = process.env[`${prefix}_LOGIN_URL`];
+    const user = process.env[`${prefix}_USERNAME`];
+    const pass = process.env[`${prefix}_PASSWORD`];
 
-  const lp = new LoginPageStaging2(page);
+    if (!loginPath) {
+      throw new Error(`ensureAuth: ${prefix}_LOGIN_URL is required in environment variables.`);
+    }
+    if (!user || !pass) {
+      throw new Error(
+        `ensureAuth: ${prefix}_USERNAME and ${prefix}_PASSWORD must be set.`
+      );
+    }
 
-  // Navigate and perform login. Let errors bubble up (no try/catch).
-  await lp.gotoLogin(loginPath);
-  await lp.login(user, pass);
+    const lp = new LoginPageibs(page);
+    await lp.gotoLogin(loginPath);
+    await lp.login(user, pass);
+    return;
+  }
 
-  // Save storage state for subsequent runs
-  const storagePath = `auth-staging2.json`;
-  await page.context().storageState({ path: storagePath });
-  console.log(`ensureAuth: automated staging2 login complete — storageState saved to ${storagePath}`);
+  /**
+   * Unsupported environment
+   */
+  throw new Error(
+    `ensureAuth: unsupported env "${env}". Supported values: sit1, sit2, staging2, ibs.`
+  );
 }

@@ -12,19 +12,26 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^17.2.3",
-    "imapflow": "^1.1.1"
+    "exceljs": "^4.4.0",
+    "imapflow": "^1.1.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "allure-playwright": "^3.4.2",
+    "allure-commandline": "^2.36.0",
+    "allure-playwright": "^3.4.3",
     "cross-env": "^10.1.0",
     "playwright": "^1.57.0"
   },
-   "scripts": {
+  "scripts": {
     "login:sit1": "cross-env TEST_ENV=sit1 node scripts/recordAuth.js",
     "login:sit2": "cross-env TEST_ENV=sit2 node scripts/recordAuth.js",
     "test:sit1": "cross-env TEST_ENV=sit1 npx playwright test",
     "test:sit2": "cross-env TEST_ENV=sit2 npx playwright test",
-    "test:staging2": "cross-env TEST_ENV=staging2 npx playwright test"
+    "test:staging2": "cross-env TEST_ENV=staging2 npx playwright test",
+    "test:ibs":"cross-env TEST_ENV=ibs npx playwright test",
+    "allure:generate": "npx allure generate allure-results --clean -o allure-report",
+    "allure:open": "npx allure open allure-report"
   }
 }
